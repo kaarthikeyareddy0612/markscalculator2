@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marks &amp; Percentage Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f8fc; --surface:#ffffff; --ink:#151a2d; --muted:#6a7188; --line:#e4e7f1;
+  --accent:#5b5bd6; --accent-soft:#ececfb; --accent-ink:#ffffff; --bad:#d64545;
+  --font:"Sora","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0f1117; --surface:#171a24; --ink:#eceef7; --muted:#9097b0; --line:#272b3a;
+    --accent:#9191ff; --accent-soft:#232540; --accent-ink:#10112a; --bad:#ff8080;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0f1117; --surface:#171a24; --ink:#eceef7; --muted:#9097b0; --line:#272b3a;
+  --accent:#9191ff; --accent-soft:#232540; --accent-ink:#10112a; --bad:#ff8080;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.55;transition:background .25s,color .25s}
+main{max-width:520px;margin:0 auto;padding:22px 18px 56px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+h1{font-size:1.35rem;font-weight:800;margin:0;letter-spacing:-.02em}
+#theme{width:42px;height:42px;padding:0;font-size:1.15rem;border-radius:50%}
+.quote{margin:0 0 22px;padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.quote p{margin:0;font-size:1.02rem;font-weight:600;line-height:1.45}
+.quote button{margin-top:6px;padding:0;border:0;background:none;color:var(--muted);font-size:.85rem;font-weight:400;text-decoration:underline;cursor:pointer}
+.hero{margin-bottom:22px}
+.big{font-size:4rem;font-weight:800;line-height:1;letter-spacing:-.04em}
+.bar{height:6px;border-radius:99px;background:var(--line);margin:12px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s ease}
+.hero p{margin:0;color:var(--muted);font-size:.95rem}
+.badge{display:inline-block;margin-top:10px;background:var(--accent-soft);color:var(--accent);font-weight:600;border-radius:99px;padding:4px 12px;font-size:.88rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+.head,.row{display:grid;grid-template-columns:1fr 66px 66px 50px;gap:8px;align-items:center}
+.head{color:var(--muted);font-size:.78rem;margin-bottom:6px;padding:0 2px}
+.row{margin-bottom:8px}
+input{width:100%;font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 8px;min-width:0}
+input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input.err{border-color:var(--bad)}
+.pc{text-align:right;font-weight:600;font-size:.88rem;color:var(--muted)}
+.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.msg{color:var(--bad);font-size:.88rem;margin:6px 0 0;min-height:1.2em}
+label{font-weight:600;display:block;margin-bottom:8px}
+.goal{display:flex;gap:8px;align-items:center}
+.goal input{max-width:110px}
+.hint{color:var(--muted);font-size:.9rem;margin:10px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Marks calculator</h1>
+    <button id="theme" type="button" aria-label="Switch theme">🌙</button>
+  </div>
+
+  <blockquote class="quote">
+    <p id="q"></p>
+    <button id="nq" type="button">Another one</button>
+  </blockquote>
+
+  <section class="hero" aria-live="polite">
+    <div class="big" id="pct">0%</div>
+    <div class="bar"><i id="fill"></i></div>
+    <p id="tot">Enter your marks to see your total.</p>
+    <span class="badge" id="grade">Ready when you are</span>
+  </section>
+
+  <section class="card" aria-label="Subjects">
+    <div class="head"><span>Subject</span><span>Got</span><span>Out of</span><span class="pc">%</span></div>
+    <div id="rows"></div>
+    <p class="msg" id="err" role="alert"></p>
+    <div class="btns">
+      <button class="main" id="add" type="button">Add subject</button>
+      <button id="reset" type="button">Clear marks</button>
+    </div>
+    <p class="hint">Leave a subject empty if you haven’t written it yet.</p>
+  </section>
+
+  <section class="card">
+    <label for="goal">Your target percentage</label>
+    <div class="goal"><input id="goal" type="number" inputmode="decimal" min="0" max="100" placeholder="90"><span>%</span></div>
+    <p class="hint" id="goalmsg">Add a target and I’ll tell you what you need in the exams still to come.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  var rowsEl=document.getElementById("rows");
+  var defaults=["Maths","Science","Social","English","Second language"];
+  var quotes=[
+    "Small steps every day beat big plans someday.",
+    "You don’t need to be perfect, just a little better than yesterday.",
+    "A bad mark is feedback, not a verdict.",
+    "Focus for one hour today. Your future self will say thanks.",
+    "Consistency is quiet, and it wins loudly.",
+    "Every question you practise is a mark you’ve already earned.",
+    "Tired is okay. Quitting is optional.",
+    "Your only race is with who you were last week.",
+    "Start before you feel ready.",
+    "Hard chapters become easy ones after the third try.",
+    "Rest is part of the plan, not a break from it.",
+    "Dream big, study daily, stay kind to yourself."
+  ];
+  var qi=Math.floor(Math.random()*quotes.length);
+  var qEl=document.getElementById("q");
+  function showQuote(){qEl.textContent=quotes[qi];}
+  document.getElementById("nq").addEventListener("click",function(){qi=(qi+1)%quotes.length;showQuote();});
+  showQuote();
+
+  var themeBtn=document.getElementById("theme");
+  function applyTheme(t){
+    document.documentElement.setAttribute("data-theme",t);
+    themeBtn.textContent=t==="dark"?"☀️":"🌙";
+    themeBtn.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
+  }
+  var saved=null;
+  try{saved=localStorage.getItem("marks-theme");}catch(e){}
+  var startDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(saved||(startDark?"dark":"light"));
+  themeBtn.addEventListener("click",function(){
+    var next=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+    applyTheme(next);
+    try{localStorage.setItem("marks-theme",next);}catch(e){}
+  });
+
+  function addRow(name,max){
+    var r=document.createElement("div");
+    r.className="row";
+    r.innerHTML='<input class="n" type="text" placeholder="Subject" aria-label="Subject name">'+
+      '<input class="g" type="number" inputmode="decimal" min="0" placeholder="0" aria-label="Marks got">'+
+      '<input class="m" type="number" inputmode="decimal" min="1" aria-label="Out of">'+
+      '<span class="pc">–</span>';
+    r.querySelector(".n").value=name||"";
+    r.querySelector(".m").value=max||100;
+    r.addEventListener("input",calc);
+    rowsEl.appendChild(r);
+  }
+
+  function fmt(n){return (Math.round(n*100)/100).toString();}
+
+  function calc(){
+    var got=0,maxDone=0,maxLeft=0,bad=false;
+    var rows=rowsEl.children;
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];
+      var g=parseFloat(r.querySelector(".g").value);
+      var m=parseFloat(r.querySelector(".m").value);
+      var pc=r.querySelector(".pc");
+      var gi=r.querySelector(".g");
+      gi.classList.remove("err");
+      if(!(m>0)){pc.textContent="–";continue;}
+      if(isNaN(g)){maxLeft+=m;pc.textContent="–";continue;}
+      if(g<0||g>m){bad=true;gi.classList.add("err");pc.textContent="?";continue;}
+      got+=g;maxDone+=m;
+      pc.textContent=fmt(g/m*100)+"%";
+    }
+    document.getElementById("err").textContent=bad?"Marks can’t be more than the maximum, or below zero.":"";
+
+    var pct=maxDone>0?got/maxDone*100:0;
+    document.getElementById("pct").textContent=fmt(pct)+"%";
+    document.getElementById("fill").style.width=Math.min(pct,100)+"%";
+    document.getElementById("tot").textContent=maxDone>0?
+      "Total: "+fmt(got)+" out of "+fmt(maxDone):"Enter your marks to see your total.";
+    var gr="Ready when you are";
+    if(maxDone>0){
+      gr=pct>=90?"Outstanding 🔥":pct>=75?"Great work 💪":pct>=60?"Good, keep pushing 📈":pct>=45?"You can level up 🎯":"Time to build a plan 🧠";
+    }
+    document.getElementById("grade").textContent=gr;
+
+    var goal=parseFloat(document.getElementById("goal").value);
+    var gm=document.getElementById("goalmsg");
+    if(isNaN(goal)||goal<=0||goal>100){
+      gm.textContent="Add a target and I’ll tell you what you need in the exams still to come.";
+    }else if(maxLeft===0){
+      gm.textContent=maxDone===0?"Enter some marks first.":(pct>=goal?"You hit your target. 🎉":"You’re "+fmt(goal-pct)+"% short of your target.");
+    }else{
+      var need=goal/100*(maxDone+maxLeft)-got;
+      if(need<=0){gm.textContent="You’ve already secured your target, even with zero in the rest. 🎉";}
+      else if(need>maxLeft){gm.textContent="Even full marks in the remaining papers won’t reach "+fmt(goal)+"%. Try a slightly lower target.";}
+      else{gm.textContent="You need "+fmt(need)+" out of "+fmt(maxLeft)+" in the remaining papers ("+fmt(need/maxLeft*100)+"% there). You’ve got this. 💪";}
+    }
+  }
+
+  document.getElementById("add").addEventListener("click",function(){addRow("",100);calc();});
+  document.getElementById("reset").addEventListener("click",function(){
+    var gs=rowsEl.querySelectorAll(".g");
+    for(var i=0;i<gs.length;i++){gs[i].value="";}
+    calc();
+  });
+  document.getElementById("goal").addEventListener("input",calc);
+
+  for(var i=0;i<defaults.length;i++){addRow(defaults[i],100);}
+  calc();
+})();
+</script>
+</body>
+</html>
